@@ -32,6 +32,11 @@ def get_version():
         return version
 
 
+def get_long_description():
+    with open(os.path.join(os.path.abspath(os.path.dirname(__file__)), 'README.md'), encoding='utf-8') as f:
+        return f.read()
+
+
 setup(
     name='pytgvoip_pyrogram',
     version=get_version(),
@@ -39,6 +44,8 @@ setup(
     author='bakatrouble',
     author_email='bakatrouble@gmail.com',
     description='Pyrogram support module for Telegram VoIP Library for Python',
+    long_description=get_long_description(),
+    long_description_content_type='text/markdown',
     url='https://github.com/bakatrouble/pytgvoip_pyrogram',
     keywords='telegram messenger voip library python pyrogram',
     project_urls={
