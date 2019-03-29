@@ -42,6 +42,7 @@ class VoIPCallBase:
         self.ctrl = VoIPController()
         self.ctrl_started = False
         self.call = None
+        self.call_access_hash = None
         self.peer = None
         self.state = None
         self.dhc = self.get_dhc()
@@ -71,9 +72,9 @@ class VoIPCallBase:
         call = update.phone_call
         if not self.call or not call or call.id != self.call.id:
             raise pyrogram.ContinuePropagation
-        if not hasattr(call, 'access_hash') or not call.access_hash:
-            call.access_hash = self.call.access_hash
         self.call = call
+        if hasattr(call, 'access_hash') and call.access_hash:
+            self.call_access_hash = call.access_hash
 
         if isinstance(call, types.PhoneCallDiscarded):
             self.call_discarded()
@@ -106,10 +107,11 @@ class VoIPCallBase:
         return self.call.id if self.call else 0
 
     def get_protocol(self) -> types.PhoneCallProtocol:
-        return types.PhoneCallProtocol(self.min_layer, self.max_layer, True, True)
+        return types.PhoneCallProtocol(min_layer=self.min_layer, max_layer=self.max_layer, udp_p2p=True,
+                                       udp_reflector=True)
 
     def get_dhc(self) -> DH:
-        return DH(self.client.send(functions.messages.GetDhConfig(0, 256)))
+        return DH(self.client.send(functions.messages.GetDhConfig(version=0, random_length=256)))
 
     def check_g(self, g_x: int, p: int) -> None:
         try:
@@ -164,7 +166,7 @@ class VoIPCallBase:
             reason = types.PhoneCallDiscardReasonDisconnect()
         try:
             self.client.send(functions.phone.DiscardCall(
-                peer=types.InputPhoneCall(self.call_id, self.call.access_hash),
+                peer=types.InputPhoneCall(id=self.call_id, access_hash=self.call_access_hash),
                 duration=self.ctrl.call_duration,
                 connection_id=self.ctrl.get_preferred_relay_id(),
                 reason=reason

@@ -33,6 +33,7 @@ class VoIPIncomingCall(VoIPCallBase):
         self.call_accepted_handlers = []
         self.update_state(CallState.WAITING_INCOMING)
         self.call = call
+        self.call_access_hash = call.access_hash
 
     def process_update(self, _, update, users, chats):
         super(VoIPIncomingCall, self).process_update(_, update, users, chats)
@@ -55,7 +56,7 @@ class VoIPIncomingCall(VoIPCallBase):
         self.g_a_hash = self.call.g_a_hash
         try:
             self.call = self.client.send(functions.phone.AcceptCall(
-                peer=types.InputPhoneCall(self.call_id, self.call.access_hash),
+                peer=types.InputPhoneCall(id=self.call_id, access_hash=self.call_access_hash),
                 g_b=i2b(self.g_b),
                 protocol=self.get_protocol()
             )).phone_call
