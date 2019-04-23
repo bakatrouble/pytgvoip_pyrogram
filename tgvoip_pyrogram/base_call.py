@@ -17,7 +17,8 @@
 # along with PytgVoIP.  If not, see <http://www.gnu.org/licenses/>.
 
 import pyrogram
-from pyrogram.api import types, functions, errors
+from pyrogram import errors
+from pyrogram.api import types, functions
 
 from tgvoip import VoIPController, CallState, CallError, Endpoint, DataSaving, VoIPServerConfig
 from tgvoip.utils import i2b, b2i, check_g

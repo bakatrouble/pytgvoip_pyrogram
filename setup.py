@@ -56,7 +56,7 @@ setup(
     python_required='~=3.4',
     packages=['tgvoip_pyrogram'],
     install_requires=[
-        'pyrogram >= 0.11.0',
+        'pyrogram >= 0.12.0',
         'pytgvoip >= 0.0.2'
     ],
     zip_safe=False,
