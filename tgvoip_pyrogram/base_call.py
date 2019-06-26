@@ -172,9 +172,8 @@ class VoIPCallBase:
                 connection_id=self.ctrl.get_preferred_relay_id(),
                 reason=reason
             ))
-        except errors.Error as e:
-            if e.ID not in ('CALL_ALREADY_DECLINED', 'CALL_ALREADY_ACCEPTED'):
-                raise e
+        except (errors.CallAlreadyDeclined, errors.CallAlreadyAccepted):
+            pass
         self.call_ended()
 
     def _initiate_encrypted_call(self) -> None:
@@ -182,8 +181,7 @@ class VoIPCallBase:
         self.ctrl.set_config(config.call_packet_timeout_ms / 1000., config.call_connect_timeout_ms / 1000.,
                              DataSaving.NEVER, self.call.id)
         self.ctrl.set_encryption_key(self.auth_key_bytes, self.is_outgoing)
-        endpoints = [self.call.connection] + self.call.alternative_connections
-        endpoints = [Endpoint(e.id, e.ip, e.ipv6, e.port, e.peer_tag) for e in endpoints]
+        endpoints = [Endpoint(e.id, e.ip, e.ipv6, e.port, e.peer_tag) for e in self.call.connections]
         self.ctrl.set_remote_endpoints(endpoints, self.call.p2p_allowed, False, self.call.protocol.max_layer)
         self.ctrl.start()
         self.ctrl.connect()

@@ -26,4 +26,4 @@ from tgvoip_pyrogram.file_stream_call import VoIPFileStreamCallMixin, VoIPIncomi
 __all__ = ['VoIPService', 'VoIPIncomingCall', 'VoIPOutgoingCall', 'VoIPFileStreamCallMixin',
            'VoIPIncomingFileStreamCall', 'VoIPOutgoingFileStreamCall', 'VoIPFileStreamService']
 
-__version__ = '0.0.4'
+__version__ = '0.0.5'
