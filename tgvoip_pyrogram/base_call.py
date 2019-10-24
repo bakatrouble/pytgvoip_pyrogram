@@ -15,6 +15,7 @@
 #
 # You should have received a copy of the GNU Lesser General Public License
 # along with PytgVoIP.  If not, see <http://www.gnu.org/licenses/>.
+from threading import Thread
 
 import pyrogram
 from pyrogram import errors
@@ -37,7 +38,7 @@ class VoIPCallBase:
     is_outgoing = False
 
     def __init__(self, client: pyrogram.Client, use_proxy_if_available: bool = True):
-        if not client.is_started:
+        if not client.is_connected:
             raise RuntimeError('Client must be started first')
         self.client = client
         self.ctrl = VoIPController()
@@ -122,15 +123,18 @@ class VoIPCallBase:
             raise
 
     def stop(self) -> None:
-        try:
-            self.client.remove_handler(self._update_handler, -1)
-        except ValueError:
-            pass
+        def _():
+            try:
+                self.client.remove_handler(self._update_handler, -1)
+            except ValueError:
+                pass
+        Thread(target=_).start()
+
         del self.ctrl
         self.ctrl = None
 
         for handler in self.call_ended_handlers:
-            callable(handler) and handler(self)
+            callable(handler) and Thread(target=handler, args=(self,)).start()
 
     def update_state(self, val: CallState) -> None:
         self.state = val
@@ -159,7 +163,7 @@ class VoIPCallBase:
             pass  # TODO: rate
 
         for handler in self.call_discarded_handlers:
-            callable(handler) and handler(self)
+            callable(handler) and Thread(target=handler, args=(self,)).start()
 
     def discard_call(self, reason=None):
         # TODO: rating
@@ -189,4 +193,4 @@ class VoIPCallBase:
         self.update_state(CallState.ESTABLISHED)
 
         for handler in self.call_started_handlers:
-            callable(handler) and handler(self)
+            callable(handler) and Thread(target=handler, args=(self,)).start()
