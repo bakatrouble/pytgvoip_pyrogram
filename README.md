@@ -27,8 +27,6 @@ call.set_output_file('output.raw')
 @call.on_call_ended
 def call_ended(call):
     app.stop()
-
-app.idle()
 ```
 
 ```python
