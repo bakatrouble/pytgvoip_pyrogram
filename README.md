@@ -52,8 +52,6 @@ def handle_call(call: VoIPIncomingFileStreamCall):
     @call.on_call_ended
     def call_ended(call):
         app.stop()
-
-app.idle()
 ```
 
 [More examples](examples/README.md)
