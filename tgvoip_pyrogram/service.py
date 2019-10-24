@@ -15,7 +15,7 @@
 #
 # You should have received a copy of the GNU Lesser General Public License
 # along with PytgVoIP.  If not, see <http://www.gnu.org/licenses/>.
-
+from threading import Thread
 from typing import Union
 
 import pyrogram
@@ -54,7 +54,9 @@ class VoIPService:
         if isinstance(update, types.UpdatePhoneCall):
             call = update.phone_call
             if isinstance(call, types.PhoneCallRequested):
-                voip_call = self.get_incoming_call_class()(call, client=self.client)
-                for handler in self.incoming_call_handlers:
-                    callable(handler) and handler(voip_call)
+                def _():
+                    voip_call = self.get_incoming_call_class()(call, client=self.client)
+                    for handler in self.incoming_call_handlers:
+                        callable(handler) and handler(voip_call)
+                Thread(target=_).start()
         raise pyrogram.ContinuePropagation
