@@ -46,4 +46,7 @@ voip_service.outgoing_call_class = VoIPAlsaOutgoingCall
 
 call1 = voip_service.start_call('@bakatrouble')
 
-client.idle()
+# you can use `call.on_call_ended(lambda _: app.stop())` here instead
+@call1.on_call_ended
+def call_ended(call):
+    client.stop()
