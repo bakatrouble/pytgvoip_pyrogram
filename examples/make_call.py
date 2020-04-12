@@ -1,5 +1,5 @@
 from tgvoip import VoIPServerConfig
-from tgvoip_pyrogram import VoIPFileStreamService
+from tgvoip_pyrogram import VoIPFileStreamService, VoIPNativeIOService
 import pyrogram
 
 
@@ -7,7 +7,7 @@ VoIPServerConfig.set_bitrate_config(80000, 100000, 60000, 5000, 5000)
 client = pyrogram.Client('session')
 client.start()
 
-voip_service = VoIPFileStreamService(client, receive_calls=False)
+voip_service = VoIPFileStreamService(client, receive_calls=False)  # use VoIPNativeIOService for native I/O
 call = voip_service.start_call('@bakatrouble')
 call.play('input.raw')
 call.play_on_hold(['input.raw'])

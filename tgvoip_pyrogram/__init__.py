@@ -21,9 +21,15 @@ from tgvoip_pyrogram.incoming_call import VoIPIncomingCall
 from tgvoip_pyrogram.outgoing_call import VoIPOutgoingCall
 from tgvoip_pyrogram.file_stream_call import VoIPFileStreamCallMixin, VoIPIncomingFileStreamCall, \
     VoIPOutgoingFileStreamCall, VoIPFileStreamService
+from tgvoip_pyrogram.native_io_call import VoIPNativeIOCallMixin, VoIPIncomingNativeIOCall, \
+    VoIPOutgoingNativeIOCall, VoIPNativeIOService
 
 
-__all__ = ['VoIPService', 'VoIPIncomingCall', 'VoIPOutgoingCall', 'VoIPFileStreamCallMixin',
-           'VoIPIncomingFileStreamCall', 'VoIPOutgoingFileStreamCall', 'VoIPFileStreamService']
+__all__ = ['VoIPService',
+           'VoIPIncomingCall', 'VoIPOutgoingCall',
+           'VoIPFileStreamService',
+           'VoIPFileStreamCallMixin', 'VoIPIncomingFileStreamCall', 'VoIPOutgoingFileStreamCall',
+           'VoIPNativeIOService',
+           'VoIPNativeIOCallMixin', 'VoIPIncomingNativeIOCall', 'VoIPOutgoingNativeIOCall']
 
-__version__ = '0.0.6.1'
+__version__ = '0.0.7'

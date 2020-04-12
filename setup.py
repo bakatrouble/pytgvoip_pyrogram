@@ -53,11 +53,11 @@ setup(
         'Community': 'https:/t.me/pytgvoip',
         'Source': 'https://github.com/bakatrouble/pytgvoip_pyrogram',
     },
-    python_required='~=3.4',
+    python_required='~=3.5',
     packages=['tgvoip_pyrogram'],
     install_requires=[
         'pyrogram >= 0.16.0',
-        'pytgvoip >= 0.0.2'
+        'pytgvoip >= 0.0.7'
     ],
     zip_safe=False,
     classifiers=[
