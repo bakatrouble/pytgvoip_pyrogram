@@ -55,7 +55,7 @@ def handle_call(call: VoIPIncomingFileStreamCall):
 [More examples](examples/README.md)
 
 ## Requirements
-* Python 3.4 or higher
+* Python 3.5 or higher
 * PytgVoIP (listed as dependency)
 * Pyrogram (listed as dependency)
 
