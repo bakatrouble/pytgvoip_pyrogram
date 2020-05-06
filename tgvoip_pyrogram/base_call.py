@@ -110,7 +110,7 @@ class VoIPCallBase:
 
     def get_protocol(self) -> types.PhoneCallProtocol:
         return types.PhoneCallProtocol(min_layer=self.min_layer, max_layer=self.max_layer, udp_p2p=True,
-                                       udp_reflector=True)
+                                       udp_reflector=True, library_versions=["2.4.4", "2.7"])
 
     def get_dhc(self) -> DH:
         return DH(self.client.send(functions.messages.GetDhConfig(version=0, random_length=256)))
