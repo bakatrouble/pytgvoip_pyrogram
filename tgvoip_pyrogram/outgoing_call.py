@@ -39,6 +39,7 @@ class VoIPOutgoingCall(VoIPCallBase):
     def request(self):
         self.update_state(CallState.REQUESTING)
         self.peer = self.client.resolve_peer(self.user_id)
+        self.get_dhc()
         self.a = randint(2, self.dhc.p-1)
         self.g_a = pow(self.dhc.g, self.a, self.dhc.p)
         self.g_a_hash = hashlib.sha256(i2b(self.g_a)).digest()
@@ -66,6 +67,7 @@ class VoIPOutgoingCall(VoIPCallBase):
             callable(handler) and handler(self)
 
         self.update_state(CallState.EXCHANGING_KEYS)
+        self.get_dhc()
         self.g_b = b2i(self.call.g_b)
         self.check_g(self.g_b, self.dhc.p)
         self.auth_key = pow(self.g_b, self.a, self.dhc.p)

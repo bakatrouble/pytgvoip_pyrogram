@@ -47,7 +47,7 @@ class VoIPCallBase:
         self.call_access_hash = None
         self.peer = None
         self.state = None
-        self.dhc = self.get_dhc()
+        self.dhc = None
         self.a = None
         self.g_a = None
         self.g_a_hash = None
@@ -112,8 +112,8 @@ class VoIPCallBase:
         return types.PhoneCallProtocol(min_layer=self.min_layer, max_layer=self.max_layer, udp_p2p=True,
                                        udp_reflector=True, library_versions=["2.4.4", "2.7"])
 
-    def get_dhc(self) -> DH:
-        return DH(self.client.send(functions.messages.GetDhConfig(version=0, random_length=256)))
+    def get_dhc(self):
+        self.dhc = DH(self.client.send(functions.messages.GetDhConfig(version=0, random_length=256)))
 
     def check_g(self, g_x: int, p: int) -> None:
         try:

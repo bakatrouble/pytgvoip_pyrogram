@@ -52,6 +52,7 @@ class VoIPIncomingCall(VoIPCallBase):
         if not self.call:
             self.call_failed()
             raise RuntimeError('call is not set')
+        self.get_dhc()
         self.b = randint(2, self.dhc.p-1)
         self.g_b = pow(self.dhc.g, self.b, self.dhc.p)
         self.g_a_hash = self.call.g_a_hash
