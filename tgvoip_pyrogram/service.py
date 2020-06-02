@@ -48,7 +48,9 @@ class VoIPService:
         return func
 
     def start_call(self, user_id: Union[str, int]):
-        return self.get_outgoing_call_class()(user_id, client=self.client)
+        call = self.get_outgoing_call_class()(user_id, client=self.client)
+        call.request()
+        return call
 
     def update_handler(self, _, update, users, chats):
         if isinstance(update, types.UpdatePhoneCall):

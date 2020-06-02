@@ -33,8 +33,12 @@ class VoIPOutgoingCall(VoIPCallBase):
 
     def __init__(self, user_id: Union[int, str], *args, **kwargs):
         super(VoIPOutgoingCall, self).__init__(*args, **kwargs)
+        self.user_id = user_id
+        self.call_accepted_handlers = []
+
+    def request(self):
         self.update_state(CallState.REQUESTING)
-        self.peer = self.client.resolve_peer(user_id)
+        self.peer = self.client.resolve_peer(self.user_id)
         self.a = randint(2, self.dhc.p-1)
         self.g_a = pow(self.dhc.g, self.a, self.dhc.p)
         self.g_a_hash = hashlib.sha256(i2b(self.g_a)).digest()
@@ -45,8 +49,6 @@ class VoIPOutgoingCall(VoIPCallBase):
             protocol=self.get_protocol(),
         )).phone_call
         self.update_state(CallState.WAITING)
-
-        self.call_accepted_handlers = []
 
     def on_call_accepted(self, func: callable) -> callable:  # the call was accepted by other party
         self.call_accepted_handlers.append(func)
