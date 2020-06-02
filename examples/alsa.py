@@ -1,3 +1,5 @@
+import asyncio
+
 from alsaaudio import PCM, PCM_NONBLOCK, PCM_CAPTURE
 
 from tgvoip import VoIPServerConfig
@@ -39,14 +41,20 @@ class VoIPAlsaOutgoingCall(VoIPOutgoingCall):
 
 VoIPServerConfig.set_bitrate_config(80000, 100000, 60000, 5000, 5000)
 client = pyrogram.Client('session')
-client.start()
-
+loop = asyncio.get_event_loop()
 voip_service = VoIPService(client, receive_calls=False)
 voip_service.outgoing_call_class = VoIPAlsaOutgoingCall
 
-call1 = voip_service.start_call('@bakatrouble')
 
-# you can use `call.on_call_ended(lambda _: app.stop())` here instead
-@call1.on_call_ended
-def call_ended(call):
-    client.stop()
+async def main():
+    await client.start()
+    call1 = await voip_service.start_call('@bakatrouble')
+
+    # you can use `call.on_call_ended(lambda _: app.stop())` here instead
+    @call1.on_call_ended
+    async def call_ended(call):
+        await client.stop()
+
+    await client.idle()
+
+loop.run_until_complete(main())

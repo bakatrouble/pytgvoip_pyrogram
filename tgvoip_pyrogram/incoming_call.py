@@ -15,6 +15,7 @@
 #
 # You should have received a copy of the GNU Lesser General Public License
 # along with PytgVoIP.  If not, see <http://www.gnu.org/licenses/>.
+import asyncio
 
 import hashlib
 from random import randint
@@ -36,10 +37,10 @@ class VoIPIncomingCall(VoIPCallBase):
         self.call = call
         self.call_access_hash = call.access_hash
 
-    def process_update(self, _, update, users, chats):
-        super(VoIPIncomingCall, self).process_update(_, update, users, chats)
+    async def process_update(self, _, update, users, chats):
+        await super(VoIPIncomingCall, self).process_update(_, update, users, chats)
         if isinstance(self.call, types.PhoneCall) and not self.auth_key:
-            self.call_accepted()
+            await self.call_accepted()
             raise pyrogram.StopPropagation
         raise pyrogram.ContinuePropagation
 
@@ -47,21 +48,21 @@ class VoIPIncomingCall(VoIPCallBase):
         self.call_accepted_handlers.append(func)
         return func
 
-    def accept(self) -> bool:
+    async def accept(self) -> bool:
         self.update_state(CallState.EXCHANGING_KEYS)
         if not self.call:
             self.call_failed()
             raise RuntimeError('call is not set')
-        self.get_dhc()
+        await self.get_dhc()
         self.b = randint(2, self.dhc.p-1)
         self.g_b = pow(self.dhc.g, self.b, self.dhc.p)
         self.g_a_hash = self.call.g_a_hash
         try:
-            self.call = self.client.send(functions.phone.AcceptCall(
+            self.call = (await self.client.send(functions.phone.AcceptCall(
                 peer=types.InputPhoneCall(id=self.call_id, access_hash=self.call_access_hash),
                 g_b=i2b(self.g_b),
                 protocol=self.get_protocol()
-            )).phone_call
+            ))).phone_call
         except errors.Error as e:
             if e.ID == 'CALL_ALREADY_ACCEPTED':
                 self.stop()
@@ -76,9 +77,9 @@ class VoIPIncomingCall(VoIPCallBase):
             return False
         return True
 
-    def call_accepted(self) -> None:
+    async def call_accepted(self) -> None:
         for handler in self.call_accepted_handlers:
-            callable(handler) and handler(self)
+            asyncio.iscoroutinefunction(handler) and asyncio.ensure_future(handler(self))
 
         if not self.call.g_a_or_b:
             print('g_a is null')
@@ -96,4 +97,4 @@ class VoIPIncomingCall(VoIPCallBase):
             print('fingerprints don\'t match')
             self.call_failed()
             return
-        self._initiate_encrypted_call()
+        await self._initiate_encrypted_call()

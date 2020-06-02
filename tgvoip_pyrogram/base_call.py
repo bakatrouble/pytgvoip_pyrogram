@@ -15,7 +15,7 @@
 #
 # You should have received a copy of the GNU Lesser General Public License
 # along with PytgVoIP.  If not, see <http://www.gnu.org/licenses/>.
-from threading import Thread
+import asyncio
 
 import pyrogram
 from pyrogram import errors
@@ -67,7 +67,7 @@ class VoIPCallBase:
         self._update_handler = pyrogram.RawUpdateHandler(self.process_update)
         self.client.add_handler(self._update_handler, -1)
 
-    def process_update(self, _, update, users, chats):
+    async def process_update(self, _, update, users, chats):
         if not isinstance(update, types.UpdatePhoneCall):
             raise pyrogram.ContinuePropagation
 
@@ -112,8 +112,8 @@ class VoIPCallBase:
         return types.PhoneCallProtocol(min_layer=self.min_layer, max_layer=self.max_layer, udp_p2p=True,
                                        udp_reflector=True, library_versions=["2.4.4", "2.7"])
 
-    def get_dhc(self):
-        self.dhc = DH(self.client.send(functions.messages.GetDhConfig(version=0, random_length=256)))
+    async def get_dhc(self):
+        self.dhc = DH(await self.client.send(functions.messages.GetDhConfig(version=0, random_length=256)))
 
     def check_g(self, g_x: int, p: int) -> None:
         try:
@@ -123,18 +123,18 @@ class VoIPCallBase:
             raise
 
     def stop(self) -> None:
-        def _():
+        async def _():
             try:
                 self.client.remove_handler(self._update_handler, -1)
             except ValueError:
                 pass
-        Thread(target=_).start()
+        asyncio.ensure_future(_())
 
         del self.ctrl
         self.ctrl = None
 
         for handler in self.call_ended_handlers:
-            callable(handler) and Thread(target=handler, args=(self,)).start()
+            asyncio.iscoroutinefunction(handler) and asyncio.ensure_future(handler(self))
 
     def update_state(self, val: CallState) -> None:
         self.state = val
@@ -163,14 +163,14 @@ class VoIPCallBase:
             pass  # TODO: rate
 
         for handler in self.call_discarded_handlers:
-            callable(handler) and Thread(target=handler, args=(self,)).start()
+            asyncio.iscoroutinefunction(handler) and asyncio.ensure_future(handler(self))
 
-    def discard_call(self, reason=None):
+    async def discard_call(self, reason=None):
         # TODO: rating
         if not reason:
             reason = types.PhoneCallDiscardReasonDisconnect()
         try:
-            self.client.send(functions.phone.DiscardCall(
+            await self.client.send(functions.phone.DiscardCall(
                 peer=types.InputPhoneCall(id=self.call_id, access_hash=self.call_access_hash),
                 duration=self.ctrl.call_duration,
                 connection_id=self.ctrl.get_preferred_relay_id(),
@@ -180,8 +180,8 @@ class VoIPCallBase:
             pass
         self.call_ended()
 
-    def _initiate_encrypted_call(self) -> None:
-        config = self.client.send(functions.help.GetConfig())  # type: types.Config
+    async def _initiate_encrypted_call(self) -> None:
+        config = await self.client.send(functions.help.GetConfig())  # type: types.Config
         self.ctrl.set_config(config.call_packet_timeout_ms / 1000., config.call_connect_timeout_ms / 1000.,
                              DataSaving.NEVER, self.call.id)
         self.ctrl.set_encryption_key(self.auth_key_bytes, self.is_outgoing)
@@ -193,4 +193,4 @@ class VoIPCallBase:
         self.update_state(CallState.ESTABLISHED)
 
         for handler in self.call_started_handlers:
-            callable(handler) and Thread(target=handler, args=(self,)).start()
+            asyncio.iscoroutinefunction(handler) and asyncio.ensure_future(handler(self))
