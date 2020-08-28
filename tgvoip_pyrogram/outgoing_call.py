@@ -22,7 +22,7 @@ from random import randint
 from typing import Union
 
 import pyrogram
-from pyrogram.api import functions, types
+from pyrogram.raw import functions, types
 
 from tgvoip import CallState
 from tgvoip.utils import i2b, b2i, calc_fingerprint
@@ -65,7 +65,7 @@ class VoIPOutgoingCall(VoIPCallBase):
 
     async def call_accepted(self) -> None:
         for handler in self.call_accepted_handlers:
-            asyncio.iscoroutinefunction(handler) and asyncio.ensure_future(handler(self))
+            asyncio.iscoroutinefunction(handler) and asyncio.ensure_future(handler(self), loop=self.client.loop)
 
         self.update_state(CallState.EXCHANGING_KEYS)
         await self.get_dhc()

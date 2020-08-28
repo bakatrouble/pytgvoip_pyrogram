@@ -28,6 +28,6 @@ async def main():
     async def call_ended(call):
         await client.stop()
 
-    await client.idle()
+    await pyrogram.idle()
 
 loop.run_until_complete(main())

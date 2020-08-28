@@ -19,8 +19,8 @@ import asyncio
 from typing import Union
 
 import pyrogram
-from pyrogram import RawUpdateHandler
-from pyrogram.api import types
+from pyrogram.raw import types
+from pyrogram.handlers import RawUpdateHandler
 
 from tgvoip_pyrogram.incoming_call import VoIPIncomingCall
 from tgvoip_pyrogram.outgoing_call import VoIPOutgoingCall
@@ -59,6 +59,7 @@ class VoIPService:
                 async def _():
                     voip_call = self.get_incoming_call_class()(call, client=self.client)
                     for handler in self.incoming_call_handlers:
-                        asyncio.iscoroutinefunction(handler) and asyncio.ensure_future(handler(voip_call))
-                asyncio.ensure_future(_())
+                        asyncio.iscoroutinefunction(handler) and asyncio.ensure_future(handler(voip_call),
+                                                                                       loop=self.client.loop)
+                asyncio.ensure_future(_(), loop=self.client.loop)
         raise pyrogram.ContinuePropagation

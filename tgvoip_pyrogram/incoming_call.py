@@ -22,7 +22,7 @@ from random import randint
 
 import pyrogram
 from pyrogram import errors
-from pyrogram.api import types, functions
+from pyrogram.raw import types, functions
 
 from tgvoip import CallState
 from tgvoip.utils import i2b, b2i, calc_fingerprint
@@ -79,7 +79,7 @@ class VoIPIncomingCall(VoIPCallBase):
 
     async def call_accepted(self) -> None:
         for handler in self.call_accepted_handlers:
-            asyncio.iscoroutinefunction(handler) and asyncio.ensure_future(handler(self))
+            asyncio.iscoroutinefunction(handler) and asyncio.ensure_future(handler(self), loop=self.client.loop)
 
         if not self.call.g_a_or_b:
             print('g_a is null')

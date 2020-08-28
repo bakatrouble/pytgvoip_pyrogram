@@ -19,7 +19,8 @@ import asyncio
 
 import pyrogram
 from pyrogram import errors
-from pyrogram.api import types, functions
+from pyrogram.raw import functions, types
+from pyrogram.handlers import RawUpdateHandler
 
 from tgvoip import VoIPController, CallState, CallError, Endpoint, DataSaving, VoIPServerConfig
 from tgvoip.utils import i2b, b2i, check_g
@@ -64,7 +65,7 @@ class VoIPCallBase:
             proxy = self.client.proxy
             self.ctrl.set_proxy(proxy['hostname'], proxy['port'], proxy['username'], proxy['password'])
 
-        self._update_handler = pyrogram.RawUpdateHandler(self.process_update)
+        self._update_handler = RawUpdateHandler(self.process_update)
         self.client.add_handler(self._update_handler, -1)
 
     async def process_update(self, _, update, users, chats):
@@ -134,7 +135,7 @@ class VoIPCallBase:
         self.ctrl = None
 
         for handler in self.call_ended_handlers:
-            asyncio.iscoroutinefunction(handler) and asyncio.ensure_future(handler(self))
+            asyncio.iscoroutinefunction(handler) and asyncio.ensure_future(handler(self), loop=self.client.loop)
 
     def update_state(self, val: CallState) -> None:
         self.state = val
@@ -163,7 +164,7 @@ class VoIPCallBase:
             pass  # TODO: rate
 
         for handler in self.call_discarded_handlers:
-            asyncio.iscoroutinefunction(handler) and asyncio.ensure_future(handler(self))
+            asyncio.iscoroutinefunction(handler) and asyncio.ensure_future(handler(self), loop=self.client.loop)
 
     async def discard_call(self, reason=None):
         # TODO: rating
@@ -193,4 +194,4 @@ class VoIPCallBase:
         self.update_state(CallState.ESTABLISHED)
 
         for handler in self.call_started_handlers:
-            asyncio.iscoroutinefunction(handler) and asyncio.ensure_future(handler(self))
+            asyncio.iscoroutinefunction(handler) and asyncio.ensure_future(handler(self), loop=self.client.loop)
